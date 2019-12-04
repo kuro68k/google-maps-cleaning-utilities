@@ -11,18 +11,20 @@
   
 var pleaseDeleteContributionsPlease = function () {
 
-    var confirmDeleteContribution = function(idx) {
-        [...document.querySelectorAll('button[class~="blue-button-text"]')].forEach( (a) => { 
+    var confirmDeleteContribution = function() {
+        [...document.querySelectorAll('button[class~="section-dialog-footer-action-button"]')].forEach( (a) => { 
             if (a.innerHTML === "Delete") {
                 a.style.border = "thick solid red";
-                a.click(); 
+				var evt = document.createEvent('MouseEvent');
+				evt.initMouseEvent('click', true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+				a.dispatchEvent(evt);
             }
         });
-        setTimeout(removeMe, 5000, idx);
+        setTimeout(removeMe, 1000);
     }
-        
-    var deleteContribution = function(idx) {
-        [...document.querySelectorAll('div[class~="context-menu-entry"] div[class~="context-menu-entry-text"]')].forEach( (a) => { 
+
+    var deleteContribution = function() {
+        [...document.querySelectorAll('div[class~="action-menu-entry"] div[class~="action-menu-entry-text"]')].forEach( (a) => { 
             if (a.innerHTML === "Delete this photo" 
                 || a.innerHTML === "Delete this video"
                 || a.innerHTML === "Delete review") {
@@ -30,28 +32,41 @@ var pleaseDeleteContributionsPlease = function () {
                 a.parentElement.click(); 
             }
         });
-        setTimeout(confirmDeleteContribution, 600, idx);
+        setTimeout(confirmDeleteContribution, 600);
     }
 
-    var removeMe = function(idx) {
+    var removeMe = function() {
         
-        var elem = [...document.querySelectorAll('button[aria-label*="actions"]')][0];
-        if (idx < items && elem) {
+		var elem;
+		var found = false;
+		var z = -1;
+		do {
+			z++;
+			elem = [...document.querySelectorAll('button[aria-label*="actions"]')][z];
+			if (elem == null)
+				return;
+			found = true;
+			for (var i = 0; i < idcache.length; i++)
+			{
+				if (idcache[i] == elem.getAttribute("data-photo-id"))
+					found = false;
+			}
+		} while(found == false);
+
+        if (elem) {
+			idcache.push(elem.getAttribute("data-photo-id"));
+			console.log(elem.getAttribute("data-photo-id"));
 
             elem.style.border = "thick solid red"; 
             elem.click();
-
-            console.log('task:', idx+1, 'of', items);
-
-            setTimeout(deleteContribution, 600, idx+1);
-        
+            setTimeout(deleteContribution, 600);
         } else {
             clearTimeout();
             console.log('DONE. You did a favor to your past and present self. Now, go print one of your favorite pictures and hang it on a wall, please.');
         }  
     };
 
-    var idx=0; 
-    var items = [...document.querySelectorAll('button[aria-label*="actions"]')].length;
-    removeMe(idx);
+	var idcache = new Array();
+	idcache.push("none");
+    removeMe();
 }
